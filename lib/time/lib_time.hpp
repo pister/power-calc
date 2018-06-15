@@ -47,7 +47,7 @@ private:
     XTimeClass() {
         register_method(FN_STR, __str__);
         register_method(FN_ADD, __add__);
-        register_method(FN_ADD, __sub__);
+        register_method(FN_SUB, __sub__);
         register_method(FN_EQ, __eq__);
         register_method(FN_LT, __lt__);
         register_method(FN_HASHCODE, __hashcode__);

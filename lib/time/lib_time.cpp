@@ -72,7 +72,7 @@ typedef struct{
     int hour;
     int minute;
     int second;
-    LONG64 ms;
+    int ms;
 } TimeDelta;
 
 typedef enum {
@@ -81,26 +81,74 @@ typedef enum {
     TDS_UNIT
 } TimeDeltaStatus;
 
+#define MAX_TIME_NUMBER_SIZE 10
+
 static
 bool parse_from_delta_expr(TimeDelta &out, const char* str) {
     TimeDelta temp = {0};
     TimeDeltaStatus st = TDS_INIT;
+    char number_buf[MAX_TIME_NUMBER_SIZE] = {0};
+    char* number_ptr = number_buf;
+    char unit_c = 0;
+    int val;
     while (1) {
         char c = *str;
         if (c == '\0') break;
-        
-        
+        if ( c >= '0' && c <= '9') {
+            st = TDS_NUMBER;
+            *number_ptr++ = c;
+        } else {
+            unit_c = c;
+            val = atoi(number_buf);
+            switch (unit_c) {
+                case 'y':
+                    temp.year = val;
+                    break;
+                case 'M':
+                    temp.month = val;
+                    break;
+                case 'd':
+                    temp.day = val;
+                    break;
+                case 'h':
+                    temp.hour = val;
+                    break;
+                case 'm':
+                    temp.minute = val;
+                    break;
+                case 's':
+                    temp.second = val;
+                    break;
+                case 't':
+                    temp.ms = val;
+                    break;
+                default:
+                    break;
+            }
+            memset(number_buf, 0, sizeof(number_buf));
+            number_ptr = number_buf;
+        }
         str++;
     }
-    
-    
     memcpy(&out, &temp, sizeof(TimeDelta));
     return true;
 }
 
 // suport for
-// 12y23M34d40h522m6122s14ms
+// 12y23M34d40h522m6122s14t
+// y-year, M-month, d-day, h-hour, m-minute, s-second, t-ms
 RtObject XTimeClass::__add__(XObject& instance, const std::vector<RtObject>& args) {
+    const RtObject& right = args.at(0);
+    const XObject* other_object = dynamic_cast<const XObject*>(right.getObject());
+    if (!other_object) {
+        return false;
+    }
+    std::string* other = (std::string*)other_object->m_data;
+    TimeDelta timeDelta;
+    if (!parse_from_delta_expr(timeDelta, other->c_str())) {
+        return false;
+    }
+    // TODO fixme
     return 0;
 }
 
