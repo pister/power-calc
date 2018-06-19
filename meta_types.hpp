@@ -24,10 +24,13 @@ class GlobalRuntimeContext;
 class RuntimeContext;
 
 
+#define CLASS_METHOD_TYPE "type"
+
 class XClass {
-protected:
-    XClass() {}
+
 public:
+    static RtObject __type__(XObject& instance, const std::vector<RtObject>& args);
+    
     typedef RtObject (*INVOKE_FN)(XObject& instance, const std::vector<RtObject>& args);
     virtual RtObject invoke(XObject& instance, const std::string& method_name, const std::vector<RtObject>& args) const {
         std::map<std::string, INVOKE_FN>::const_iterator it = m_methods.find(method_name);
@@ -56,14 +59,22 @@ public:
         return obj.getStringValue();
     }
 
+    const std::string get_name() const {
+        return m_name;
+    }
+    
 protected:
     void register_method(const std::string& method_name, INVOKE_FN fn) {
         m_methods[method_name] = fn;
+    }
+    XClass(const char* name) : m_name(name) {
+        register_method(CLASS_METHOD_TYPE, __type__);
     }
 private:
     XClass(const XClass&);
     XClass& operator=(const XClass&);
     std::map<std::string, INVOKE_FN> m_methods;
+    std::string m_name;
 };
 
 
@@ -89,7 +100,7 @@ private:
     static RtObject __slice__(XObject& instance, const std::vector<RtObject>& args);
     static RtObject __hashcode__(XObject& instance, const std::vector<RtObject>& args);
 private:
-    XStringClass() {
+    XStringClass() : XClass("string") {
         register_method(FN_STR, __str__);
         register_method(FN_ADD, __add__);
         register_method(FN_RADD, __radd__);
@@ -161,7 +172,7 @@ public:
         return &instance;
     }
 private:
-    XCallableClass() {}
+    XCallableClass() : XClass("callable") {}
 };
 
 
@@ -187,7 +198,7 @@ private:
     static RtObject join(XObject& instance, const std::vector<RtObject>& args);
     static RtObject append(XObject& instance, const std::vector<RtObject>& args);
 private:
-    XListClass() {
+    XListClass() : XClass("list") {
         register_method(FN_STR, __str__);
         register_method(FN_ADD, __add__);
         register_method(FN_MULTI, __multi__);
@@ -223,7 +234,7 @@ private:
     static RtObject __hasnext__(XObject& instance, const std::vector<RtObject>& args);
     static RtObject __next__(XObject& instance, const std::vector<RtObject>& args);
 private:
-    XIteratorClass() {
+    XIteratorClass() : XClass("iterator") {
         register_method(FN_HASNEXT, __hasnext__);
         register_method(FN_NEXT, __next__);
     }
@@ -243,7 +254,7 @@ public:
 private:
     static RtObject __iter__(XObject& instance, const std::vector<RtObject>& args);
 private:
-    XIntIteratorFactoryClass() {
+    XIntIteratorFactoryClass() : XClass("intIteratorFactory") {
         register_method(FN_ITER, __iter__);
     }
 };
@@ -267,7 +278,7 @@ private:
     static RtObject __iter__(XObject& instance, const std::vector<RtObject>& args);
     static RtObject __add__(XObject& instance, const std::vector<RtObject>& args);
 private:
-    XMapClass() {
+    XMapClass() : XClass("map") {
         register_method(FN_STR, __str__);
         register_method(FN_EQ, __eq__);
         register_method(FN_LEN, __len__);
@@ -342,7 +353,7 @@ private:
     static RtObject __iter__(XObject& instance, const std::vector<RtObject>& args);
     static RtObject __getitem__(XObject& instance, const std::vector<RtObject>& args);
 private:
-    XModuleClass() {
+    XModuleClass() : XClass("module") {
         register_method(FN_STR, __str__);
         register_method(FN_ITER, __iter__);
         register_method(FN_GETITEM, __getitem__);

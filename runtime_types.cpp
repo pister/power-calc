@@ -211,6 +211,10 @@ RtObject RtObject::rt_multi(const RtObject& v) const {
 }
 RtObject RtObject::rt_sub(const RtObject& v) const {
     const RtObjectType my_type = getType();
+    if (my_type == RT_TYPE_OBJECT) {
+        XObject* self = getObject();
+        return self->invoke(FN_SUB, v);
+    }
     const RtObjectType other_type = v.getType();
     if (my_type == RT_TYPE_Float || other_type == RT_TYPE_Float) {
         return getFloatValue() - v.getFloatValue();
@@ -219,6 +223,10 @@ RtObject RtObject::rt_sub(const RtObject& v) const {
 }
 RtObject RtObject::rt_div(const RtObject& v) const {
     const RtObjectType my_type = getType();
+    if (my_type == RT_TYPE_OBJECT) {
+        XObject* self = getObject();
+        return self->invoke(FN_DIV, v);
+    }
     const RtObjectType other_type = v.getType();
     if (my_type == RT_TYPE_Float || other_type == RT_TYPE_Float) {
         return getFloatValue() / v.getFloatValue();

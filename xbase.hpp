@@ -18,5 +18,11 @@
 #define MODULE_EXT ".ybc"
 
 
+#ifdef WIN32
+typedef __int64 LONG64;
+#else
+typedef long long LONG64;
+#endif
+
 
 #endif /* xbase_hpp */

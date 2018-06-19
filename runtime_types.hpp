@@ -12,15 +12,12 @@
 #include <string>
 #include <vector>
 #include "ast.hpp"
+#include "xbase.hpp"
 
 using std::string;
 using std::vector;
 
-#ifdef WIN32
-typedef __int64 LONG64;
-#else
-typedef long long LONG64;
-#endif
+
 
 class XObject;
 
@@ -117,6 +114,22 @@ public:
     operator bool() const;
     bool operator==(const RtObject& v) const {
         return rt_equals(v);
+    }
+    const std::string type() const {
+        switch(m_type) {
+            case RT_TYPE_Boolean:
+                return "boolean";
+            case RT_TYPE_Int:
+                return "int";
+            case RT_TYPE_Float:
+                return "float";
+            case RT_TYPE_Null:
+                return "null";
+            case RT_TYPE_OBJECT:
+                return "object";
+            default:
+                return "<unkown>";
+        }
     }
 private:
     void add_object_ref();

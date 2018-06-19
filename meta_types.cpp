@@ -38,6 +38,13 @@ static LONG64 X_get_pos(const RtObject& input_pos, size_t data_size, LONG64 defa
     return pos;
 }
 
+// ====================================================================
+
+RtObject XClass::__type__(XObject& instance, const std::vector<RtObject>& args) {
+    const XClass *clazz = instance.getClass();
+    return XStringClass::newObject(clazz->get_name());
+}
+
 /// ============ XStringClass begin ============
 RtObject XStringClass::newObject(const std::string& str) {
     return newObject(str.c_str());
