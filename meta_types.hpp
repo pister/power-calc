@@ -290,6 +290,39 @@ private:
     }
 };
 
+typedef struct {
+    BYTE* data;
+    size_t len;
+} XBytesData;
+
+class XBytesClass: public XClass {
+public:
+    static RtObject newObject(size_t len);
+    static RtObject newObject(const BYTE* init_data, size_t len);
+    virtual void on_destroying(XObject& instance) const;
+    static XBytesClass* instance() {
+        static XBytesClass instance;
+        return &instance;
+    }
+private:
+    static RtObject __str__(XObject& instance, const std::vector<RtObject>& args);
+    static RtObject __len__(XObject& instance, const std::vector<RtObject>& args);
+    static RtObject __getitem__(XObject& instance, const std::vector<RtObject>& args);
+    static RtObject __setitem__(XObject& instance, const std::vector<RtObject>& args);
+   // static RtObject __iter__(XObject& instance, const std::vector<RtObject>& args);
+    static RtObject __decode__(XObject& instance, const std::vector<RtObject>& args);
+private:
+    XBytesClass() : XClass("bytes") {
+        register_method(FN_STR, __str__);
+        register_method(FN_LEN, __len__);
+        register_method(FN_GETITEM, __getitem__);
+        register_method(FN_SETITEM, __setitem__);
+      //  register_method(FN_ITER, __iter__);
+        register_method("length", __len__);
+        register_method("decode", __decode__);
+    }
+};
+
 class XModuleDef {
 protected:
     XModuleDef(const std::string& name) : m_name(name) {}

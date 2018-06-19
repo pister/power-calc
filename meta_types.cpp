@@ -1009,3 +1009,77 @@ GlobalRuntimeContext& XModuleClass::getModuleGlobalRuntimeContext(XObject& insta
 
 /// ============ XModuleClass end ============
 
+
+
+/// ============ XBytesClass start ============
+
+
+
+RtObject XBytesClass::newObject(size_t len) {
+    BYTE* bytes = new BYTE[len];
+    XBytesData * data = new XBytesData;
+    data->data = bytes;
+    data->len = len;
+    return new XObject(XBytesClass::instance(), data);
+}
+
+RtObject XBytesClass::newObject(const BYTE* init_data, size_t len) {
+    XBytesData * data = new XBytesData;
+    data->data = new BYTE[len];
+    data->len = len;
+    memcpy(data->data, init_data, len);
+    return new XObject(XBytesClass::instance(), data);
+}
+
+void XBytesClass::on_destroying(XObject& instance) const {
+    XBytesData* data = (XBytesData*)instance.getData();
+    if (data) {
+        if (data->data) {
+            delete[] data->data;
+            data->data = NULL;
+            data->len = 0;
+        }
+        delete data;
+    }
+}
+
+RtObject XBytesClass::__str__(XObject& instance, const std::vector<RtObject>& args) {
+    XBytesData* data = (XBytesData*)instance.getData();
+    std::ostringstream oss;
+    oss << "<bytes|" << data->len << ">";
+    return XStringClass::newObject(oss.str());
+}
+
+RtObject XBytesClass::__len__(XObject& instance, const std::vector<RtObject>& args) {
+    XBytesData* data = (XBytesData*)instance.getData();
+    return RtObject::RtObject((LONG64)data->len);
+}
+
+RtObject XBytesClass::__getitem__(XObject& instance, const std::vector<RtObject>& args) {
+    XBytesData* data = (XBytesData*)instance.getData();
+    RtObject index = args.at(0);
+    size_t indexValue = (size_t)index.getIntValue();
+    return (LONG64)data->data[indexValue];
+}
+
+RtObject XBytesClass::__setitem__(XObject& instance, const std::vector<RtObject>& args) {
+    XBytesData* data = (XBytesData*)instance.getData();
+    RtObject index = args.at(0);
+    size_t indexValue = (size_t)index.getIntValue();
+    data->data[indexValue] = (BYTE)args.at(1).getIntValue();
+    return RtObject::Null;
+}
+
+RtObject XBytesClass::__decode__(XObject& instance, const std::vector<RtObject>& args) {
+    XBytesData* data = (XBytesData*)instance.getData();
+    // TODO FIX here, use string decoder !!
+    char *buf = new char[data->len + 1];
+    memcpy(buf, data->data, data->len);
+    buf[data->len] = '\0';
+    RtObject ret = XStringClass::newObject(buf);
+    delete[] buf;
+    return ret;
+}
+
+
+/// ============ XBytesClass start ============

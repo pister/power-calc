@@ -23,7 +23,7 @@ static RtObject time_sleep(RuntimeContext& runtimeContext) {
 }
 
 void lib_register_time_module(XBoot &boot) {
-    NativeMethodModuleCreator creator(boot, "time");
+    NativeMethodModuleCreator creator(boot, TIME_MODULE_NAME);
     {
         NativeMethodInfo m;
         m.method = time_now;
@@ -45,6 +45,14 @@ void lib_register_time_module(XBoot &boot) {
     boot.register_modules(creator);
 }
 
+
+static
+tm get_local_time(XObject& instance) {
+    LONG64* timeData = (LONG64*)instance.m_data;
+    time_t seconds = *timeData / 1000;
+    tm time = *localtime(&seconds);
+    return time;
+}
 
 // for XTimeClass
 RtObject XTimeClass::newObject() {
@@ -69,10 +77,9 @@ void XTimeClass::on_destroying(XObject& instance) const {
 }
 
 RtObject XTimeClass::__str__(XObject& instance, const std::vector<RtObject>& args) {
-    LONG64* timeData = (LONG64*)instance.m_data;
-    std::ostringstream oss;
-    oss << *timeData;
-    return XStringClass::newObject(oss.str());
+    std::vector<RtObject> real_args;
+    real_args.push_back(XStringClass::newObject("%Y-%m-%d %H:%M:%S"));
+    return XTimeClass::__format__(instance, real_args);
 }
 
 typedef struct{
@@ -119,10 +126,10 @@ bool parse_from_delta_expr(TimeDelta &out, const char* str) {
                 case 'M':
                     temp.month = val;
                     break;
+                     */
                 case 'd':
                     temp.day = val;
                     break;
-                     */
                 case 'h':
                     temp.hour = val;
                     break;
@@ -148,10 +155,10 @@ bool parse_from_delta_expr(TimeDelta &out, const char* str) {
 }
 
 // suport for
-// 40h522m6122s14t
-// h-hour, m-minute, s-second, t-ms
+// 25d40h522m12s14t
+// d-day, h-hour, m-minute, s-second, t-ms
 // 12y23M34d40h522m6122s14t
-// not support y-year, M-month, d-day this version, will be support in future
+// not support y-year, M-month this version, will be support in future
 RtObject XTimeClass::__add__(XObject& instance, const std::vector<RtObject>& args) {
     LONG64* timeData = (LONG64*)instance.m_data;
     const RtObject& right = args.at(0);
@@ -169,7 +176,8 @@ RtObject XTimeClass::__add__(XObject& instance, const std::vector<RtObject>& arg
     newTime += timeDelta.second * 1000;
     newTime += timeDelta.minute * 60 * 1000;
     newTime += timeDelta.hour * 60 * 60 * 1000;
-    // TODO to be support for day, month and year.
+    newTime += timeDelta.day * 24 * 60 * 60 * 1000;
+    // TODO to be support for  month and year.
 
     return XTimeClass::newObject(newTime);
 }
@@ -191,7 +199,8 @@ RtObject XTimeClass::__sub__(XObject& instance, const std::vector<RtObject>& arg
     newTime -= timeDelta.second * 1000;
     newTime -= timeDelta.minute * 60 * 1000;
     newTime -= timeDelta.hour * 60 * 60 * 1000;
-    // TODO to be support for day, month and year.
+    newTime -= timeDelta.day * 24 * 60 * 60 * 1000;
+    // TODO to be support for month and year.
     
     return XTimeClass::newObject(newTime);
 
@@ -232,5 +241,14 @@ RtObject XTimeClass::__gt__(XObject& instance, const std::vector<RtObject>& args
 RtObject XTimeClass::__hashcode__(XObject& instance, const std::vector<RtObject>& args) {
     LONG64* timeData = (LONG64*)instance.m_data;
     return *timeData;
+}
 
+// %Y-%m-%d %H:%M:%S
+RtObject XTimeClass::__format__(XObject& instance, const std::vector<RtObject>& args) {
+    const XObject* other_object = dynamic_cast<const XObject*>(args.at(0).getObject());
+    std::string* fmt_string = (std::string*)other_object->getData();
+    tm time = get_local_time(instance);
+    char buf[128];
+    strftime(buf, 128, fmt_string->c_str(), &time);
+    return XStringClass::newObject(buf);
 }

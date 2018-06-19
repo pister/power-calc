@@ -10,6 +10,9 @@
 #include "xboot.hpp"
 
 #include "lib_time.hpp"
+#include "lib_os.hpp"
+
+
 
 static RtObject the_addr(RuntimeContext& runtimeContext) {
     RtObject a =  runtimeContext.get_variable("a");
@@ -39,7 +42,8 @@ void x1() {
         
         
         lib_register_time_module(boot);
-        
+        lib_register_os_module(boot);
+
         
         boot.add_path("/Users/songlihuang/Documents/mine/temp");
         boot.eval(&in);

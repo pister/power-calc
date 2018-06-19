@@ -25,4 +25,7 @@ typedef long long LONG64;
 #endif
 
 
+typedef unsigned char BYTE;
+
+
 #endif /* xbase_hpp */

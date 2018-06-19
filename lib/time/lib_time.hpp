@@ -12,19 +12,10 @@
 #include "runtime_types.hpp"
 #include "meta_types.hpp"
 
-using std::vector;
-using std::map;
-using std::pair;
-
-
-class GlobalRuntimeContext;
-class RuntimeContext;
-
 #define TIME_MODULE_NAME "time"
 
 class XBoot;
 void lib_register_time_module(XBoot &boot);
-
 
 class XTimeClass: public XClass {
 public:
@@ -43,6 +34,7 @@ private:
     static RtObject __lt__(XObject& instance, const std::vector<RtObject>& args);
     static RtObject __gt__(XObject& instance, const std::vector<RtObject>& args);
     static RtObject __hashcode__(XObject& instance, const std::vector<RtObject>& args);
+    static RtObject __format__(XObject& instance, const std::vector<RtObject>& args);
 
 private:
     XTimeClass() : XClass("time") {
@@ -52,6 +44,7 @@ private:
         register_method(FN_EQ, __eq__);
         register_method(FN_LT, __lt__);
         register_method(FN_GT, __gt__);
+        register_method("format", __format__);
         register_method(FN_HASHCODE, __hashcode__);
     }
 };

@@ -115,22 +115,6 @@ public:
     bool operator==(const RtObject& v) const {
         return rt_equals(v);
     }
-    const std::string type() const {
-        switch(m_type) {
-            case RT_TYPE_Boolean:
-                return "boolean";
-            case RT_TYPE_Int:
-                return "int";
-            case RT_TYPE_Float:
-                return "float";
-            case RT_TYPE_Null:
-                return "null";
-            case RT_TYPE_OBJECT:
-                return "object";
-            default:
-                return "<unkown>";
-        }
-    }
 private:
     void add_object_ref();
     void release_object_ref();
